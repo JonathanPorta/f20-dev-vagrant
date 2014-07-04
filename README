@@ -9,3 +9,4 @@
 ##Missing
 -Need a way to handle git configuration.
 -Need a way to handle opening and forwarding of ports. Currently, I opened up the VirtualBox gui and forwarded the ports.
+-Add an empty ./mnt or ./mount folder and allow user to specify what, if anything gets mounted there. i.e. ./mount/opt -> vm's /opt or whatever.
