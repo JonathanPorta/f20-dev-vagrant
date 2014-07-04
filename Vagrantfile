@@ -16,7 +16,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   vagrant_public_key_path = `sed '3q;d' #{ vagrant_user_file } | tr -d '\n'` # Path to public key file on line 3
 
   # look in file and use that username, otherwise use vagrant default.
-  if !vagrant_username.nil? and !vagrant_private_key_path.nil? and !vagrant_public_key_path.nil?
+  if vagrant_username != '' and vagrant_private_key_path != '' and vagrant_public_key_path != ''
     puts "Using found username of '#{ vagrant_username }' from file '#{ vagrant_user_file }'."
     config.ssh.username = vagrant_username
     config.ssh.private_key_path = vagrant_private_key_path
@@ -26,14 +26,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # When we initially run vagrant up we give the following three env variables.
     # After the first provision is complete, we write those to a file.
     if ENV['VAGRANT_SSH_USERNAME'] and ENV['VAGRANT_SSH_PRIVATE_KEY'] and ENV['VAGRANT_SSH_PUBLIC_KEY']
+      puts "Writing username of '#{ ENV['VAGRANT_SSH_USERNAME'] }' to file '#{ vagrant_user_file }'."
+
       output = "'#{ ENV['VAGRANT_SSH_USERNAME'] }\n#{ ENV['VAGRANT_SSH_PRIVATE_KEY'] }\n#{ ENV['VAGRANT_SSH_PUBLIC_KEY'] }\n'"
-      puts " Writing username of '#{ ENV['VAGRANT_SSH_USERNAME'] }' to file '#{ vagrant_user_file }'."
       `echo #{ output } > #{ vagrant_user_file }`
     end
   end
 
   config.trigger.after [:destroy], :option => "value" do
     # When we run vagrant destroy let's also clear out the user file.
+    puts "Clearing saved user credentials."
     `echo "" > #{ vagrant_user_file }`
   end
 
@@ -50,7 +52,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         admin_username: ENV['VAGRANT_SSH_USERNAME'],
         admin_key_path: ENV['VAGRANT_SSH_PUBLIC_KEY']
       }
-    elsif vagrant_username and vagrant_private_key_path and vagrant_public_key_path
+    elsif vagrant_username != '' and vagrant_private_key_path != '' and vagrant_public_key_path != ''
       ansible.extra_vars = {
         admin_username: vagrant_username,
         admin_key_path: vagrant_public_key_path
@@ -59,7 +61,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   # Disabled default shared folder, we don't need this crap.
-  config.vm.synced_folder(".", "/vagrant", id: "vagrant-root", disabled: true)
+  config.vm.synced_folder ".", "/vagrant", id: "vagrant-root", disabled: true
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
