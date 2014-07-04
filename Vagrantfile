@@ -5,69 +5,46 @@
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  # All Vagrant configuration is done here. The most common configuration
-  # options are documented and commented below. For a complete reference,
-  # please see the online documentation at vagrantup.com.
 
-  default_ssh_username = config.ssh.username
-  default_ssh_key = config.ssh.private_key_path
-
-  # make sure our username file exists.
+  # Make sure our user file exists.
   vagrant_user_file = '.vagrant-user'
   `touch #{ vagrant_user_file }`
+
+  # Read in the user details for this vm.
   vagrant_username = `sed '1q;d' #{ vagrant_user_file } | tr -d '\n'` # Username on line 1
   vagrant_private_key_path = `sed '2q;d' #{ vagrant_user_file } | tr -d '\n'` # Path to private key file on line 2
   vagrant_public_key_path = `sed '3q;d' #{ vagrant_user_file } | tr -d '\n'` # Path to public key file on line 3
 
-  # config.trigger.before [:up, :resume], :option => "value" do
-  #   puts "BEFORE UP!"
-    # look in file and use that username, otherwise use vagrant default.
-    if vagrant_username.nil? and vagrant_private_key_path.nil? and vagrant_public_key_path.nil?
-      puts "Using found username of '#{ vagrant_username }' from file '#{ vagrant_user_file }'."
-      config.ssh.username = vagrant_username
-      config.ssh.private_key_path = vagrant_private_key_path
-    end
-  # end
+  # look in file and use that username, otherwise use vagrant default.
+  if !vagrant_username.nil? and !vagrant_private_key_path.nil? and !vagrant_public_key_path.nil?
+    puts "Using found username of '#{ vagrant_username }' from file '#{ vagrant_user_file }'."
+    config.ssh.username = vagrant_username
+    config.ssh.private_key_path = vagrant_private_key_path
+  end
 
   config.trigger.after [:up], :option => "value" do
-    # if a username was passed in, we write that to the file.
+    # When we initially run vagrant up we give the following three env variables.
+    # After the first provision is complete, we write those to a file.
     if ENV['VAGRANT_SSH_USERNAME'] and ENV['VAGRANT_SSH_PRIVATE_KEY'] and ENV['VAGRANT_SSH_PUBLIC_KEY']
       output = "'#{ ENV['VAGRANT_SSH_USERNAME'] }\n#{ ENV['VAGRANT_SSH_PRIVATE_KEY'] }\n#{ ENV['VAGRANT_SSH_PUBLIC_KEY'] }\n'"
-      puts " Writing username of '#{ vagrant_username }' to file '#{ vagrant_user_file }'."
+      puts " Writing username of '#{ ENV['VAGRANT_SSH_USERNAME'] }' to file '#{ vagrant_user_file }'."
       `echo #{ output } > #{ vagrant_user_file }`
     end
   end
 
   config.trigger.after [:destroy], :option => "value" do
+    # When we run vagrant destroy let's also clear out the user file.
     `echo "" > #{ vagrant_user_file }`
   end
 
-
-  # if ENV['VAGRANT_SSH_USERNAME']
-  #   `ssh -q #{ ENV['VAGRANT_SSH_USERNAME'] }@localhost -p 2222 -o PasswordAuthentication=no exit`
-  #   vagrant_ssh_result = $?.exitstatus
-  #   puts "SSH Returned: #{ vagrant_ssh_result }"
-  #   if vagrant_ssh_result == 255
-  #     puts "SSH connection failed using provided username: #{ ENV['VAGRANT_SSH_USERNAME'] }"
-  #     puts "Falling back to 'vagrant' default username."
-  #     config.ssh.username = default_ssh_username
-  #   else
-  #     puts "SSH connection suceded with username: #{ ENV['VAGRANT_SSH_USERNAME'] }"
-  #     config.ssh.username = ENV['VAGRANT_SSH_USERNAME']
-  #   end
-  # end
-  # Every Vagrant virtual environment requires a box to build off of.
+  # The base box that we are going to start with.
   config.vm.box = "chef/fedora-20"
 
-
   config.vm.provision "ansible" do |ansible|
-    # ansible.verbose = "v"
+
     ansible.playbook = "provisioning/playbook.yml"
 
-    # if ENV['VAGRANT_SSH_USERNAME'].nil?# or ES_DLPASS.nil?
-    #   puts "When provisioning, you must set the environment variables: VAGRANT_SSH_USERNAME"
-    #   exit 1
-    # end
+    # Provision with the saved information or the env variables.
     if ENV['VAGRANT_SSH_USERNAME'] and ENV['VAGRANT_SSH_PRIVATE_KEY'] and ENV['VAGRANT_SSH_PUBLIC_KEY']
       ansible.extra_vars = {
         admin_username: ENV['VAGRANT_SSH_USERNAME'],
@@ -81,7 +58,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
-  # Disabled default shared folder, we don't need.
+  # Disabled default shared folder, we don't need this crap.
   config.vm.synced_folder(".", "/vagrant", id: "vagrant-root", disabled: true)
 
   # Disable automatic box update checking. If you disable this, then
