@@ -6,3 +6,6 @@
 ##First Run
 `VAGRANT_SSH_USERNAME=username VAGRANT_SSH_PRIVATE_KEY=/home/username/.ssh/id_rsa VAGRANT_SSH_PUBLIC_KEY=/home/username/.ssh/id_rsa.pub vagrant up`
 
+##Missing
+-Need a way to handle git configuration.
+-Need a way to handle opening and forwarding of ports. Currently, I opened up the VirtualBox gui and forwarded the ports.
