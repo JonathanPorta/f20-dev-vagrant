@@ -1,0 +1,4 @@
+
+
+##Install Vagrant Trigger Plugin
+`vagrant plugin install vagrant-triggers`
