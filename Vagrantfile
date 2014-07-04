@@ -22,7 +22,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # config.trigger.before [:up, :resume], :option => "value" do
   #   puts "BEFORE UP!"
     # look in file and use that username, otherwise use vagrant default.
-    if vagrant_username and vagrant_private_key_path and vagrant_public_key_path
+    if vagrant_username.nil? and vagrant_private_key_path.nil? and vagrant_public_key_path.nil?
       puts "Using found username of '#{ vagrant_username }' from file '#{ vagrant_user_file }'."
       config.ssh.username = vagrant_username
       config.ssh.private_key_path = vagrant_private_key_path
@@ -30,7 +30,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # end
 
   config.trigger.after [:up], :option => "value" do
-    puts "AFTER UP!"
     # if a username was passed in, we write that to the file.
     if ENV['VAGRANT_SSH_USERNAME'] and ENV['VAGRANT_SSH_PRIVATE_KEY'] and ENV['VAGRANT_SSH_PUBLIC_KEY']
       output = "'#{ ENV['VAGRANT_SSH_USERNAME'] }\n#{ ENV['VAGRANT_SSH_PRIVATE_KEY'] }\n#{ ENV['VAGRANT_SSH_PUBLIC_KEY'] }\n'"
@@ -39,6 +38,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
+  config.trigger.after [:destroy], :option => "value" do
+    `echo "" > #{ vagrant_user_file }`
+  end
 
 
   # if ENV['VAGRANT_SSH_USERNAME']
@@ -78,6 +80,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       }
     end
   end
+
+  # Disabled default shared folder, we don't need.
+  config.vm.synced_folder(".", "/vagrant", id: "vagrant-root", disabled: true)
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
