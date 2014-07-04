@@ -1,4 +1,8 @@
-
+#Vagrant Fedora 20 Box
 
 ##Install Vagrant Trigger Plugin
 `vagrant plugin install vagrant-triggers`
+
+##First Run
+`VAGRANT_SSH_USERNAME=username VAGRANT_SSH_PRIVATE_KEY=/home/username/.ssh/id_rsa VAGRANT_SSH_PUBLIC_KEY=/home/username/.ssh/id_rsa.pub vagrant up`
+
