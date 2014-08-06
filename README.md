@@ -4,7 +4,9 @@
 `vagrant plugin install vagrant-triggers`
 
 ##First Run
-`VAGRANT_SSH_USERNAME=username VAGRANT_SSH_PRIVATE_KEY=/home/username/.ssh/id_rsa VAGRANT_SSH_PUBLIC_KEY=/home/username/.ssh/id_rsa.pub vagrant up`
+```bash
+VAGRANT_SSH_USERNAME=$(whoami) VAGRANT_SSH_PRIVATE_KEY=$(cd $HOME ; pwd)/.ssh/id_rsa VAGRANT_SSH_PUBLIC_KEY=$(cd $HOME ; pwd)/.ssh/id_rsa.pub vagrant up
+```
 
 ##Some Todo'ish Notes
 - Need a way to handle git configuration.
