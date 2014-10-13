@@ -1,14 +1,29 @@
-#Vagrant Fedora 20 Box
+##Vagrant Fedora 20 Box
 
-##Install Vagrant Trigger Plugin
+###Install Vagrant Trigger Plugin
 `vagrant plugin install vagrant-triggers`
 
-##First Run
+###Uh, What is this?
+I wanted to be able to create a clean VM for each project that I was working on. I wanted new VM's to be easily created, and be constrained to live in a single directory.
+
+###Usage
+This repository is designed to be used by making a new clone for each new Vagrant box.
+It is designed to be helpful by caching your credentials to a `.vagrant-user` file in the root of the repository.
+The first time you spinup the VM you need to specify your `username`, `public key path`, and `private key path`.(Your private key will be used by Vagrant to connect to your VM, it won't be sent anywhere.)
+Afterwards, you will be able to use `vagrant up` and the other vagrant commands as normal.
+
+####First Time
 ```bash
 VAGRANT_SSH_USERNAME=$(whoami) VAGRANT_SSH_PRIVATE_KEY=$(cd $HOME ; pwd)/.ssh/id_rsa VAGRANT_SSH_PUBLIC_KEY=$(cd $HOME ; pwd)/.ssh/id_rsa.pub vagrant up
 ```
+####Subsequently
+```bash
+vagrant up
+```
 
-##Some Todo'ish Notes
+Easy, huh?
+
+###Some Todo'ish Notes
 - Need a way to handle git configuration.
 - Need a way to handle opening and forwarding of ports. Currently, I opened up the VirtualBox gui and forwarded the ports.
 - Add an empty ./mnt or ./mount folder and allow user to specify what, if anything gets mounted there. i.e. ./mount/opt -> vm's /opt or whatever.
