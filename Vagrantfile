@@ -63,6 +63,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Disabled default shared folder, we don't need this crap.
   config.vm.synced_folder ".", "/vagrant", id: "vagrant-root", disabled: true
 
+  # Make sure that we can get DNS requests out of the Vagrantbox.
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+  end
+
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
