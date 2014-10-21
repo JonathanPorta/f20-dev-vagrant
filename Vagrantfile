@@ -14,6 +14,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   vagrant_username = `sed '1q;d' #{ vagrant_user_file } | tr -d '\n'` # Username on line 1
   vagrant_private_key_path = `sed '2q;d' #{ vagrant_user_file } | tr -d '\n'` # Path to private key file on line 2
   vagrant_public_key_path = `sed '3q;d' #{ vagrant_user_file } | tr -d '\n'` # Path to public key file on line 3
+  vagrant_do_token = `sed '4q;d' #{ vagrant_user_file } | tr -d '\n'` # Digital Ocean token on line 4
 
   # look in file and use that username, otherwise use vagrant default.
   if vagrant_username != '' and vagrant_private_key_path != '' and vagrant_public_key_path != ''
@@ -28,7 +29,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     if ENV['VAGRANT_SSH_USERNAME'] and ENV['VAGRANT_SSH_PRIVATE_KEY'] and ENV['VAGRANT_SSH_PUBLIC_KEY']
       puts "Writing username of '#{ ENV['VAGRANT_SSH_USERNAME'] }' to file '#{ vagrant_user_file }'."
 
-      output = "'#{ ENV['VAGRANT_SSH_USERNAME'] }\n#{ ENV['VAGRANT_SSH_PRIVATE_KEY'] }\n#{ ENV['VAGRANT_SSH_PUBLIC_KEY'] }\n'"
+      output = "'#{ ENV['VAGRANT_SSH_USERNAME'] }\n#{ ENV['VAGRANT_SSH_PRIVATE_KEY'] }\n#{ ENV['VAGRANT_SSH_PUBLIC_KEY'] }\n'#{ ENV['VAGRANT_DO_TOKEN'] }"
       `echo #{ output } > #{ vagrant_user_file }`
     end
   end
@@ -57,6 +58,22 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         admin_username: vagrant_username,
         admin_key_path: vagrant_public_key_path
       }
+    end
+  end
+
+  config.vm.provider :digital_ocean do |provider, override|
+    if ENV['VAGRANT_DO_TOKEN'] and ENV['VAGRANT_SSH_PRIVATE_KEY']
+      provider.token = ENV['VAGRANT_DO_TOKEN']
+      provider.image = "Fedora 20 x64"
+      provider.region = "sfo1"
+      provider.size = "512MB"
+      override.ssh.private_key_path = ENV['VAGRANT_SSH_PRIVATE_KEY']
+    elsif vagrant_do_token != '' and vagrant_private_key_path != ''
+      provider.token = vagrant_do_token
+      provider.image = "Fedora 20 x64"
+      provider.region = "sfo1"
+      provider.size = "512MB"
+      override.ssh.private_key_path = vagrant_private_key_path
     end
   end
 
